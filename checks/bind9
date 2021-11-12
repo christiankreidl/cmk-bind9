@@ -1,0 +1,271 @@
+#!/usr/bin/env python3
+# -*- encoding: utf-8; py-indent-offset: 4 -*-
+
+# License: GNU General Public License v2
+# (c) 2021 Christian Kreidl
+
+import re
+
+#test = [['+++', 'Statistics', 'Dump', '+++', '(1330440301)'], ['++',
+#'Incoming', 'Requests', '++'], ['582730', 'QUERY'], ['2264', 'UPDATE'], ['++',
+#'Incoming', 'Queries', '++'], ['331403', 'A'], ['1600', 'NS'], ['4', 'CNAME'],
+#['2406', 'SOA'], ['66467', 'PTR'], ['338', 'MX'], ['14296', 'TXT'], ['5072',
+#'AFSDB'], ['141529', 'AAAA'], ['18580', 'SRV'], ['7', 'A6'], ['5', 'SPF'], ['1',
+#'AXFR'], ['1022', 'ANY'], ['++', 'Outgoing', 'Queries', '++'], ['[View:',
+#'default]'], ['307954', 'A'], ['4557', 'NS'], ['1', 'CNAME'], ['257', 'SOA'],
+#['2376', 'PTR'], ['101', 'MX'], ['12063', 'TXT'], ['124', 'AFSDB'], ['171492',
+#'AAAA'], ['185', 'SRV'], ['37', 'ANY'], ['[View:', '_bind]'], ['++', 'Name',
+#'Server', 'Statistics', '++'], ['584994', 'IPv4', 'requests', 'received'],
+#['6012', 'requests', 'with', 'EDNS(0)', 'received'], ['48', 'TCP', 'requests',
+#'received'], ['345', 'auth', 'queries', 'rejected'], ['78', 'recursive',
+#'queries', 'rejected'], ['1', 'transfer', 'requests', 'rejected'], ['2264',
+#'update', 'requests', 'rejected'], ['572389', 'responses', 'sent'], ['51',
+#'truncated', 'responses', 'sent'], ['6012', 'responses', 'with', 'EDNS(0)',
+#'sent'], ['408745', 'queries', 'resulted', 'in', 'successful', 'answer'],
+#['148718', 'queries', 'resulted', 'in', 'authoritative', 'answer'], ['401577',
+#'queries', 'resulted', 'in', 'non', 'authoritative', 'answer'], ['60759',
+#'queries', 'resulted', 'in', 'nxrrset'], ['19406', 'queries', 'resulted', 'in',
+#'SERVFAIL'], ['80791', 'queries', 'resulted', 'in', 'NXDOMAIN'], ['237499',
+#'queries', 'caused', 'recursion'], ['12491', 'duplicate', 'queries',
+#'received'], ['114', 'queries', 'dropped'], ['423', 'other', 'query',
+#'failures'], ['++', 'Zone', 'Maintenance', 'Statistics', '++'], ['12', 'IPv4',
+#'notifies', 'sent'], ['++', 'Resolver', 'Statistics', '++'], ['[Common]'],
+#['[View:', 'default]'], ['481437', 'IPv4', 'queries', 'sent'], ['17710', 'IPv6',
+#'queries', 'sent'], ['461501', 'IPv4', 'responses', 'received'], ['19239',
+#'NXDOMAIN', 'received'], ['492', 'SERVFAIL', 'received'], ['920', 'FORMERR',
+#'received'], ['11361', 'other', 'errors', 'received'], ['985', 'EDNS(0)',
+#'query', 'failures'], ['145', 'truncated', 'responses', 'received'], ['101',
+#'lame', 'delegations', 'received'], ['68734', 'query', 'retries'], ['20250',
+#'query', 'timeouts'], ['37054', 'IPv4', 'NS', 'address', 'fetches'], ['40495',
+#'IPv6', 'NS', 'address', 'fetches'], ['394', 'IPv4', 'NS', 'address', 'fetch',
+#'failed'], ['35678', 'IPv6', 'NS', 'address', 'fetch', 'failed'], ['207353',
+#'queries', 'with', 'RTT', '<', '10ms'], ['168970', 'queries', 'with', 'RTT',
+#'10-100ms'], ['78729', 'queries', 'with', 'RTT', '100-500ms'], ['281',
+#'queries', 'with', 'RTT', '500-800ms'], ['7', 'queries', 'with', 'RTT',
+#'800-1600ms'], ['2', 'queries', 'with', 'RTT', '>', '1600ms'], ['[View:',
+#'_bind]'], ['++', 'Cache', 'DB', 'RRsets', '++'], ['[View:', 'default]'],
+#['14700', 'A'], ['8363', 'NS'], ['2797', 'CNAME'], ['43', 'PTR'], ['3', 'MX'],
+#['7', 'TXT'], ['1301', 'AAAA'], ['1', 'SRV'], ['153', 'DS'], ['753', 'RRSIG'],
+#['140', 'NSEC'], ['1947', '!AAAA'], ['612', 'NXDOMAIN'], ['[View:', '_bind',
+#'(Cache:', '_bind)]'], ['++', 'Socket', 'I/O', 'Statistics', '++'], ['481366',
+#'UDP/IPv4', 'sockets', 'opened'], ['17713', 'UDP/IPv6', 'sockets', 'opened'],
+#['144', 'TCP/IPv4', 'sockets', 'opened'], ['481364', 'UDP/IPv4', 'sockets',
+#'closed'], ['17713', 'UDP/IPv6', 'sockets', 'closed'], ['1345', 'TCP/IPv4',
+#'sockets', 'closed'], ['64', 'UDP/IPv4', 'socket', 'bind', 'failures'], ['3',
+#'UDP/IPv6', 'socket', 'bind', 'failures'], ['17710', 'UDP/IPv6', 'socket',
+#'connect', 'failures'], ['481296', 'UDP/IPv4', 'connections', 'established'],
+#['141', 'TCP/IPv4', 'connections', 'established'], ['1205', 'TCP/IPv4',
+#'connections', 'accepted'], ['17710', 'UDP/IPv6', 'send', 'errors'], ['6159',
+#'UDP/IPv4', 'recv', 'errors'], ['++', 'Per', 'Zone', 'Query', 'Statistics',
+#'++'], ['[example.com]'], ['1', 'transfer', 'requests', 'rejected'],
+#['2157', 'update', 'requests', 'rejected'], ['59866', 'queries', 'resulted',
+#'in', 'successful', 'answer'], ['117009', 'queries', 'resulted', 'in',
+#'authoritative', 'answer'], ['21431', 'queries', 'resulted', 'in', 'nxrrset'],
+#['35712', 'queries', 'resulted', 'in', 'NXDOMAIN'],
+#['[40.10.10.in-addr.arpa]'], ['107', 'update', 'requests', 'rejected'],
+#['317', 'queries', 'resulted', 'in', 'successful', 'answer'], ['1226',
+#'queries', 'resulted', 'in', 'authoritative', 'answer'], ['107', 'queries',
+#'resulted', 'in', 'nxrrset'], ['802', 'queries', 'resulted', 'in', 'NXDOMAIN'],
+#['[41.10.10.in-addr.arpa]'], ['23236', 'queries', 'resulted', 'in',
+#'successful', 'answer'], ['23474', 'queries', 'resulted', 'in', 'authoritative',
+#'answer'], ['9', 'queries', 'resulted', 'in', 'nxrrset'], ['229', 'queries',
+#'resulted', 'in', 'NXDOMAIN'], ['[42.10.10.in-addr.arpa]'], ['4148',
+#'queries', 'resulted', 'in', 'successful', 'answer'], ['4256', 'queries',
+#'resulted', 'in', 'authoritative', 'answer'], ['3', 'queries', 'resulted', 'in',
+#'nxrrset'], ['105', 'queries', 'resulted', 'in', 'NXDOMAIN'],
+#['[43.10.10.in-addr.arpa]'], ['195', 'queries', 'resulted', 'in',
+#'successful', 'answer'], ['406', 'queries', 'resulted', 'in', 'authoritative',
+#'answer'], ['211', 'queries', 'resulted', 'in', 'NXDOMAIN'],
+#['[39.10.10.in-addr.arpa]'], ['431', 'queries', 'resulted', 'in',
+#'successful', 'answer'], ['436', 'queries', 'resulted', 'in', 'authoritative',
+#'answer'], ['5', 'queries', 'resulted', 'in', 'NXDOMAIN'], ['---', 'Statistics',
+#'Dump', '---', '(1330440301)']]
+
+#from pprint import pprint
+# show all local variables:       pprint( locals())
+
+
+#---------------
+# parse
+#---------------
+def parse_bind9(info):
+    expectedStats = {
+      # "bind statistics output string", "perfdata Name", value
+      # responsesSent = Success + NXRRSET + SERVFAIL + NXDOMAIN + authQueryRej + recursionRej + transferRej + updateRej
+      # Auth + NonAuth = Success + NXRRSET + NXDOMAIN
+        "auth queries rejected"         : "authQueryRej",
+        "recursive queries rejected"    : "recursionRej",
+        "transfer requests rejected"    : "transferRej", 
+        "update requests rejected"      : "updateRej",   
+
+        "responses sent"                : "responsesSent",
+
+        "queries resulted in successful answer"         : "Success",
+        "queries resulted in authoritative answer"      : "Auth",   
+        "queries resulted in non authoritative answer"  : "NonAuth",
+        
+        "queries resulted in nxrrset"   : "NXRRSET",  
+        "queries resulted in SERVFAIL"  : "SERVFAIL", 
+        "queries resulted in NXDOMAIN"  : "NXDOMAIN", 
+        "queries caused recursion"      : "recursion",
+    }
+    expectedQueries = [
+      # "bind type output string", "perfdata Name", value
+      "A"    ,
+      "NS"   ,
+      "CNAME",
+      "SOA"  ,
+      "PTR"  ,
+      "MX"   ,
+      "TXT"  ,
+      "AFSDB",
+      "AAAA" ,
+      "DNAME",
+      "DS"   ,
+      "RRSIG",
+      "NSEC" ,
+      "SRV"  ,
+      "A6"   ,
+      "SPF"  ,
+      "AXFR" ,
+      "ANY"  ,
+      "KEY"  ,
+      "NAPTR",
+      "WKS"  ,
+    ]
+
+    
+    result = {}
+    name = ""
+    mode = ""
+    foundHeader = False
+    inMetrics = False
+
+    # loop over all output lines of the agent
+    for line in info:
+        linestr = " ".join(line) # combine words to a string
+
+        if linestr == "++ Name Server Statistics ++":
+            mode="zone"
+            name="GLOBAL"
+            foundHeader = True
+            inMetrics = True
+            for key, value in expectedStats.items():
+                result.setdefault(mode, {}).setdefault(name, {}).setdefault(value,0)
+            continue;
+        
+        if linestr == "++ Per Zone Query Statistics ++":
+            mode="zone"
+            name=""
+            foundHeader = True
+            continue;
+
+        if (mode == "zone") and (linestr[0] == '[' and (foundHeader == True)):
+            name = linestr[1:len(linestr)-1] # get zone name
+            inMetrics = True
+            for key, value in expectedStats.items():
+                result.setdefault(mode, {}).setdefault(name, {}).setdefault(value,0)
+            continue
+            
+        if linestr == "++ Outgoing Queries ++":
+            mode="type"
+            name="outgoing default"
+            foundHeader = True
+            inMetrics   = True
+            for value in expectedQueries:
+                result.setdefault(mode, {}).setdefault(name, {}).setdefault(value,0)
+            continue;
+        
+        if linestr == "++ Incoming Queries ++":
+            mode="type"
+            name="incoming"
+            foundHeader = True
+            inMetrics   = True
+            for value in expectedQueries:
+                result.setdefault(mode, {}).setdefault(name, {}).setdefault(value,0)
+            continue;
+        
+        if (mode == "type") and (linestr == '[View: default]'):
+            inMetrics = True
+            continue
+            
+            
+        if (linestr[0] == "+") or (linestr[0] == "-") or (linestr[0] == "["):
+            foundHeader = False
+            inMetrics   = False
+            
+        if (inMetrics):
+            metric_value  = int(line[0])                   # first field has number
+            metric_string = " ".join(line[1:len(line)])  # remaining fields are metric name
+            metric_name   = ""
+            
+            # rename
+            if (mode=="zone"):
+                if metric_string in expectedStats.keys():
+                    metric_name   = expectedStats[metric_string]
+            else:
+                metric_name   = metric_string
+            
+            # store values in hash
+            if metric_name in result.get(mode).get(name).keys():
+                result[mode][name][metric_name] = metric_value
+
+    return result
+
+
+#---------------
+# inventory
+#---------------
+def inventory_bind9(mode, parsed):
+    if parsed.get(mode):
+        for key in parsed.get(mode).keys():
+            yield key, {}
+    else:
+        return
+           
+
+#---------------
+# checks
+#---------------
+def check_bind9(mode, item, params, parsed):
+    if item in parsed.get(mode):
+        # Performance counters
+        this_time = time.time()
+        wrapped = False
+        perfdata = []
+        
+        for (key, value) in parsed[mode][item].items():
+            try:
+                rate = get_rate("bind9_%s_%s" % (key, item), this_time, value, onwrap=RAISE)
+                perfdata.append( (key, rate) )
+            except MKCounterWrapped:
+                wrapped = True
+                # continue, other counters might wrap as well
+
+        # if at least one counter wrapped, we do not handle the counters at all
+        if wrapped:
+            perfdata = []
+            
+        #send data
+        yield 0, "OK - submitted performance data for zone %s" % item, perfdata
+    else:
+        return
+
+
+
+# declare the check to Check_MK
+check_info["bind9.zone"] = {
+    'parse_function'          : parse_bind9,
+    'check_function'          : lambda item, param, parsed: check_bind9('zone', item, param, parsed),
+    'inventory_function'      : lambda parsed: inventory_bind9('zone', parsed), 
+    'service_description'     : "Bind9 Zone %s",
+    'has_perfdata'            : True,
+}
+
+check_info["bind9.type"] = {
+    'parse_function'          : parse_bind9,
+    'check_function'          : lambda item, param, parsed: check_bind9('type', item, param, parsed),
+    'inventory_function'      : lambda parsed: inventory_bind9('type',parsed),
+    'service_description'     : "Bind9 Type %s",
+    'has_perfdata'            : True,
+}

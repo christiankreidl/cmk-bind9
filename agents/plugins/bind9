@@ -1,0 +1,16 @@
+#!/bin/bash
+echo '<<<bind9>>>'
+
+STATSFILE=/var/cache/bind/named.stats
+
+if [ -e /etc/check_mk/bind9.conf ]; then
+. /etc/check_mk/bind9.conf
+fi
+
+if [ ! -e $STATSFILE ]; then
+ exit 0
+fi
+
+cat $STATSFILE
+
+
